@@ -45,6 +45,14 @@ inputs:
       deployment-names input.
     default: "false"
 
+  deploy-with-latest-prefect:
+    description: |
+      Controls whether to upgrade Prefect to the latest version deployment.
+      Defaults to true to maintain consistency with latest versions.
+      Set to false when you want to use the existing Prefect version installed in your environment.
+    required: false
+    default: "true"
+
 runs:
   using: composite
   steps:
@@ -66,23 +74,11 @@ runs:
 
     - id: prefect-deploy
       run: |
-        needs_install=true
-        
-        # Check if prefect is installed
-        if pip show prefect >/dev/null 2>&1; then
-          current_version=$(pip show prefect | grep Version | cut -d' ' -f2)
-          major_version=$(echo $current_version | cut -d'.' -f1)
-          
-          if [ "$major_version" -ge 3 ] && [ "$major_version" -lt 4 ]; then
-            echo "Prefect $current_version is already installed and within the required version range."
-            needs_install=false
-          fi
-        fi
 
-        # Install only if needed
-        if [ "$needs_install" = true ]; then
-          echo "Installing Prefect with version constraints"
+        if [ ${{ inputs.deploy-with-latest-prefect }} == "true" ]; then
           pip install prefect -U "prefect>=3,<4"
+        else
+          pip install "prefect>=3,<4"
         fi
 
         
