@@ -66,7 +66,26 @@ runs:
 
     - id: prefect-deploy
       run: |
-        pip install prefect -U "prefect>=3,<4"
+        needs_install=true
+        
+        # Check if prefect is installed
+        if pip show prefect >/dev/null 2>&1; then
+          current_version=$(pip show prefect | grep Version | cut -d' ' -f2)
+          major_version=$(echo $current_version | cut -d'.' -f1)
+          
+          if [ "$major_version" -ge 3 ] && [ "$major_version" -lt 4 ]; then
+            echo "Prefect $current_version is already installed and within the required version range."
+            needs_install=false
+          fi
+        fi
+
+        # Install only if needed
+        if [ "$needs_install" = true ]; then
+          echo "Installing Prefect with version constraints"
+          pip install prefect -U "prefect>=3,<4"
+        fi
+
+        
         if [ ${{ inputs.all-deployments }} == "true" ];
         then
           prefect --no-prompt deploy --all --prefect-file "${{ inputs.deployment-file-path }}"
