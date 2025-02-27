@@ -77,11 +77,10 @@ runs:
 
         if [ ${{ inputs.deploy-with-latest-prefect }} == "true" ]; then
           pip install prefect -U "prefect>=3,<4"
-        else
-          pip install "prefect>=3,<4"
         fi
-
-        
+        echo "Running with Prefect:"
+        prefect version
+                
         if [ ${{ inputs.all-deployments }} == "true" ];
         then
           prefect --no-prompt deploy --all --prefect-file "${{ inputs.deployment-file-path }}"
